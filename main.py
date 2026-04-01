@@ -53,15 +53,21 @@ class Scene:
 
 class Sphere:
     def __init__(self, center, radius, color, transparency):
-        self.x = center[0]
-        self.y = center[1]
-        self.z = center[2]
+        self.p = center
         self.r = radius
         self.c = color
         self.t = transparency
     
     def intersect(self, p, d):
-        #
+        oc = p-self.p
+        a = np.dot(d,d)
+        b = 2*np.dot(oc, d)
+        c = np.dot(oc,oc)-self.r**2
+        disc = b*b-4*a*c
+        if disc < 0:
+            return None
+        t = (-b - np.sqrt(disc)) / (2*a)
+        return t if t > 0 else None
 
     def normal(self, point):
         center = np.array([self.x, self.y, self.z])

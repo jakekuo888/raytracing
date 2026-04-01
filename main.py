@@ -8,14 +8,14 @@ class Ray:
         self.P = P
         self.d = d
 
-    def traceRay(self, P, d, scene):
-        Q, N, M = scene.intersect(P, d)
+    def traceRay(self, scene):
+        Q, N, M = scene.intersect(self.P, self.d)
         #Q is point of intersection
         #N is surface normal
         #M is the material properties
         if Q == None:
             return np.array([0, 0, 0])
-        I = self.shade(Q, N, M, d, scene)
+        I = self.shade(Q, N, M, self.d, scene)
         return I
     
     def shade(self, Q, N, M, d, scene):
@@ -96,15 +96,14 @@ objProp = [
 scene_ = Scene(objProp, np.array([2, 2, 10]))
 
 def raytrace(origin, direction, scene):
-    x,y,z = origin
-    return 0
+    return Ray(origin, direction).traceRay(scene)
 
 pygame.init()
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Jake's RayTracing")
+pygame.display.set_caption("Quasistar's RayTracing")
 screen.fill((255, 255, 255))
 
 for x in range(SCREEN_WIDTH):

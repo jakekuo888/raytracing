@@ -12,12 +12,18 @@ class Ray:
         self.d = d
 
     def traceRay(self, P, d, scene):
-        (Q, N, M) = scene.intersect(P, d)#pretend that this is a given
+        Q, N, M = scene.intersect(P, d)
         #Q is point of intersection
         #N is surface normal
         #M is the material properties
-        I = shade(Q, N, M, d, scene)
+        I = self.shade(Q, N, M, d, scene)
         return I
+    
+    def shade(self, Q, N, M, d, scene):
+        lightd = scene.l-Q
+        lightd = lightd / np.linalg.norm(lightd)
+        intensity = max(0, np.dot(N, lightd))
+        return M.c*intensity
     
 class Scene:
     def __init__(self, objProperties, lightP, lightS):

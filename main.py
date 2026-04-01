@@ -1,9 +1,6 @@
 import numpy as np
-import pygame as pyg
-
-def raytrace(origin, recursion, scene):
-    x,y,z = origin
-    return 0
+import pygame
+import sys
 
 class Ray:
     def __init__(self, P, d):
@@ -16,6 +13,8 @@ class Ray:
         #Q is point of intersection
         #N is surface normal
         #M is the material properties
+        if Q == None:
+            return np.array([0, 0, 0])
         I = self.shade(Q, N, M, d, scene)
         return I
     
@@ -26,10 +25,9 @@ class Ray:
         return M.c*intensity
     
 class Scene:
-    def __init__(self, objProperties, lightP, lightS):
+    def __init__(self, objProperties, lightP):
         self.objects = []
         self.l = lightP #pos
-        self.st = lightS #strength
         #only supports spheres, add more unique shapes later I guess.
         for objP in objProperties:
             center = objP[0]
@@ -49,7 +47,7 @@ class Scene:
                 minT = t
                 hit_Obj = i
         
-        if(hit_Obj == None)
+        if hit_Obj == None:
             return None, None, None
         
         Q = p+d*minT
@@ -72,9 +70,55 @@ class Sphere:
         disc = b*b-4*a*c
         if disc < 0:
             return None
-        t = (-b - np.sqrt(disc)) / (2*a)
-        return t if t > 0 else None
+        t1 = (-b - np.sqrt(disc)) / (2*a)
+        t2 = (-b + np.sqrt(disc)) / (2*a)
+        return min(t for t in [t1, t2] if t > 0) if any(t > 0 for t in [t1, t2]) else None
 
     def normal(self, point):
-        center = np.array([self.x, self.y, self.z])
-        return (point - center) / self.r
+        return (point - self.p) / self.r
+
+
+objProp = [
+    [
+        np.array([5,5,1]),
+        1,
+        np.array([0, 47, 255]),
+        0.1
+    ],
+    [
+        np.array([3,3,5]),
+        1.2,
+        np.array([0, 148, 2]),
+        0.1
+    ],
+]
+
+scene_ = Scene(objProp, np.array([2, 2, 10]))
+
+def raytrace(origin, direction, scene):
+    x,y,z = origin
+    return 0
+
+pygame.init()
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Jake's RayTracing")
+screen.fill((255, 255, 255))
+
+for x in range(SCREEN_WIDTH):
+    for y in range(SCREEN_HEIGHT):
+        direction = 
+        col = raytrace(camera_pos, direction, scene_)
+
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+pygame.quit()
+sys.exit()

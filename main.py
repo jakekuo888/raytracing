@@ -20,16 +20,27 @@ class Ray:
         if M.ref > 0:
             reflect_dir = self.d - 2 * np.dot(self.d, N) * N
             reflect_dir = reflect_dir / np.linalg.norm(reflect_dir)
-            reflected_color = Ray(Q + 1e-4 * N, reflect_dir).traceRay(scene, depth + 1, max_depth)
+            colors = []
+            for _ in range(5):  # 5 rays
+                rand_dir = reflect_dir + 0.05*np.random.randn(3)
+                rand_dir /= np.linalg.norm(rand_dir)
+                colors.append(Ray(Q + 1e-4 * N, rand_dir).traceRay(scene, depth + 1, max_depth))
+            
+            reflected_color = np.mean(colors, axis=0)
             I = I * (1 - M.ref) + reflected_color * M.ref
 
         return np.clip(I, 0, 255).astype(int)
     
     def shade(self, Q, N, M, d, scene):
-        lightd = scene.l - Q
-        lightd = lightd / np.linalg.norm(lightd)
-        intensity = max(0, np.dot(N, lightd))
-        return np.clip(M.c * intensity, 0, 255).astype(int)
+        L = scene.l - Q
+        L = L / np.linalg.norm(L)
+        V = -d / np.linalg.norm(d)
+        diffuse = max(0, np.dot(N, L))
+        R = 2 * np.dot(N, L) * N - L
+        specular = max(0, np.dot(R, V)) ** 50
+        color = M.c * diffuse + np.array([255,255,255]) * specular
+        
+        return np.clip(color, 0, 255).astype(int)
     
 class Scene:
     def __init__(self, objProperties, lightP):
@@ -87,36 +98,57 @@ class Sphere:
 
 objProp = [
     [
-        np.array([0, 0, 5]),
+        np.array([-3, 1, 5]),
         1,
         np.array([184, 31, 31]),
         0.1,
-        0.3,
+        0.1,
     ],
     [
         np.array([2, 1, 3]),
         2,
         np.array([33, 184, 73]),
         0.1,
-        0.3,
+        0.1,
     ],
     [
         np.array([0, 2, 2]),
         1,
         np.array([41, 31, 184]),
         0.1,
-        0.3,
+        0.1,
+    ],
+    [
+        np.array([-3, -2, 2]),
+        2.2,
+        np.array([41, 31, 184]),
+        0.1,
+        0.1,
+    ],
+    [
+        np.array([-9, 4, 6]),
+        3,
+        np.array([120, 255, 253]),
+        0.1,
+        0.1,
+    ],
+    [
+        np.array([1, -3, -2]),
+        2,
+        np.array([33, 184, 73]),
+        0.1,
+        0.1,
     ],
 ]
 
-scene_ = Scene(objProp, np.array([0,0,0]))
+scene_ = Scene(objProp, np.array([0,100,0]))
 
 def raytrace(origin, direction, scene):
     return Ray(origin, direction).traceRay(scene)
 
 pygame.init()
 
-scale = 2
+scale = 3
 SCREEN_WIDTH = int(200*scale)
 SCREEN_HEIGHT = int(150*scale)
 
@@ -143,6 +175,7 @@ def dostuff():
             direction = direction / np.linalg.norm(direction)
             col = raytrace(camera_pos, direction, scene_)
             screen.set_at((x, y), col.astype(int))
+        pygame.display.flip()
 
 dostuff()
 
@@ -153,6 +186,7 @@ running = True
 clock = pygame.time.Clock()
 
 while running:
+    pygame.display.flip()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
